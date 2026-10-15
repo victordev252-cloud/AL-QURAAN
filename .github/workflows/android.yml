@@ -24,63 +24,15 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set Up Android SDK
+      - name: Set Up Android SDK and required components
         uses: android-actions/setup-android@v3
-
-      - name: Configure Android SDK
-        shell: bash
-        run: |
-          set -e
-
-          echo "ANDROID_HOME=${ANDROID_HOME:-$ANDROID_SDK_ROOT}" >> "$GITHUB_ENV"
-
-          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT}}"
-          echo "Using Android SDK: $SDK_ROOT"
-
-          if [ -x "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" ]; then
-            SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
-          elif [ -x "$SDK_ROOT/cmdline-tools/16.0/bin/sdkmanager" ]; then
-            SDKMANAGER="$SDK_ROOT/cmdline-tools/16.0/bin/sdkmanager"
-          else
-            SDKMANAGER="$(command -v sdkmanager || true)"
-          fi
-
-          if [ -z "$SDKMANAGER" ]; then
-            echo "ERROR: sdkmanager was not found."
-            exit 1
-          fi
-
-          echo "Initial SDK Manager: $SDKMANAGER"
-          echo "SDKMANAGER_PATH=$SDKMANAGER" >> "$GITHUB_ENV"
-
-      - name: Ensure cmdline-tools latest is installed
-        shell: bash
-        run: |
-          set -e
-          # Install cmdline-tools;latest using the sdkmanager found earlier
-          # This prevents "Failed to find package 'tools'" errors
-          echo y | "$SDKMANAGER_PATH" --sdk_root="$ANDROID_HOME" --install "cmdline-tools;latest"
-
-          # Re-point to the newly installed cmdline-tools/latest sdkmanager if present
-          if [ -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
-            echo "Using updated SDK Manager from cmdline-tools/latest"
-            echo "SDKMANAGER_PATH=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" >> "$GITHUB_ENV"
-          fi
-
-      - name: Accept Android SDK Licenses
-        shell: bash
-        run: |
-          set -e
-          yes | "$SDKMANAGER_PATH" --sdk_root="$ANDROID_HOME" --licenses || true
-
-      - name: Install Android SDK Packages
-        shell: bash
-        run: |
-          set -e
-          "$SDKMANAGER_PATH" --sdk_root="$ANDROID_HOME" --install \
-            "platform-tools" \
-            "platforms;android-35" \
-            "build-tools;35.0.0"
+        with:
+          api-level: 35
+          build-tools: '35.0.0'
+          components: |
+            platform-tools
+            cmdline-tools;latest
+            platforms;android-35
 
       - name: Verify Gradle Wrapper
         shell: bash
