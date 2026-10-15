@@ -50,24 +50,34 @@ jobs:
             exit 1
           fi
 
-          echo "SDK Manager: $SDKMANAGER"
+          echo "Initial SDK Manager: $SDKMANAGER"
           echo "SDKMANAGER_PATH=$SDKMANAGER" >> "$GITHUB_ENV"
+
+      - name: Ensure cmdline-tools latest is installed
+        shell: bash
+        run: |
+          set -e
+          # Install cmdline-tools;latest using the sdkmanager found earlier
+          # This prevents "Failed to find package 'tools'" errors
+          echo y | "$SDKMANAGER_PATH" --sdk_root="$ANDROID_HOME" --install "cmdline-tools;latest"
+
+          # Re-point to the newly installed cmdline-tools/latest sdkmanager if present
+          if [ -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+            echo "Using updated SDK Manager from cmdline-tools/latest"
+            echo "SDKMANAGER_PATH=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" >> "$GITHUB_ENV"
+          fi
 
       - name: Accept Android SDK Licenses
         shell: bash
         run: |
           set -e
-          yes | "$SDKMANAGER_PATH" \
-            --sdk_root="$ANDROID_HOME" \
-            --licenses || true
+          yes | "$SDKMANAGER_PATH" --sdk_root="$ANDROID_HOME" --licenses || true
 
       - name: Install Android SDK Packages
         shell: bash
         run: |
           set -e
-
-          "$SDKMANAGER_PATH" \
-            --sdk_root="$ANDROID_HOME" \
+          "$SDKMANAGER_PATH" --sdk_root="$ANDROID_HOME" --install \
             "platform-tools" \
             "platforms;android-35" \
             "build-tools;35.0.0"
