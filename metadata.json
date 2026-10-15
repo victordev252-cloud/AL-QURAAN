@@ -1,0 +1,6 @@
+{
+  "name": "Quran Karim",
+  "description": "Complete Islamic Quran application with Uthmani Arabic text, Somali and English translations, audio recitation, bookmarks, and Tasbih.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
