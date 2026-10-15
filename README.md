@@ -106,3 +106,8 @@ To sign the APK for Google Play Store release:
    - `STORE_PASSWORD`: keystore password
    - `KEY_PASSWORD`: alias private key password
 3. Run `gradle :app:assembleRelease` to produce a signed production APK.
+4. gradle wrapper --gradle-version 8.6
+chmod +x gradlew
+git add gradlew gradlew.bat gradle/wrapper/
+git commit -m "Add Gradle wrapper"
+git push
