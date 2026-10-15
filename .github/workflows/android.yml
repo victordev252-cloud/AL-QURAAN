@@ -1,57 +1,48 @@
-name: Quran Karim APK Builder
+name: Build Quran Karim APK
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - main
-
-permissions:
-  contents: read
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build Quran Karim
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Java 17
+      - name: Set Up Java
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: 'temurin'
           java-version: '17'
 
-      - name: Set Up Android SDK and required components
+      - name: Set Up Android SDK
         uses: android-actions/setup-android@v3
         with:
-          api-level: 35
-          build-tools: '35.0.0'
-          components: |
-            platform-tools
-            cmdline-tools;latest
-            platforms;android-35
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+          accept-android-sdk-licenses: true
 
-      - name: Verify Gradle Wrapper
-        shell: bash
+      - name: Set Up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: stable
+
+      - name: Verify gradlew exists
         run: |
-          if [ ! -f gradlew ]; then
-            echo "ERROR: gradlew is missing from the repository root."
-            exit 1
-          fi
+          cd android && ls -la gradlew || echo "gradlew missing"
 
-          chmod +x gradlew
-          ./gradlew --version
+      - name: Flutter pub get
+        run: flutter pub get
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+      - name: Build APK
+        run: flutter build apk --release
 
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Quran-Karim-APK
-          path: app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
-          retention-days: 14
+          name: quran-karim-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
